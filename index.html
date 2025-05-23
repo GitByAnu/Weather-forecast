@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Forecast 🌸</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffdde1, #eea2a2);
+      overflow-x: hidden;
+      color: #4b2350;
+      user-select: none;
+    }
+
+    /* Background animations by weather */
+    body.sunny {
+      background: linear-gradient(135deg, #ffd6d6, #ffe4ec);
+      animation: sunnyGlow 8s ease-in-out infinite alternate;
+    }
+    @keyframes sunnyGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    body.rainy {
+      background: linear-gradient(135deg, #a4c6f8, #c1d7ff);
+      animation: rainyGlow 5s ease-in-out infinite alternate;
+    }
+    @keyframes rainyGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    body.cloudy {
+      background: linear-gradient(135deg, #d8d8d8, #f0f0f0);
+      animation: cloudyGlow 7s ease-in-out infinite alternate;
+    }
+    @keyframes cloudyGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    body.snow {
+      background: linear-gradient(135deg, #e0f7ff, #ffffff);
+      animation: snowGlow 6s ease-in-out infinite alternate;
+    }
+    @keyframes snowGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    body.night {
+      background: linear-gradient(135deg, #2a1a40, #6b4f7d);
+      animation: nightGlow 8s ease-in-out infinite alternate;
+      color: #f6e5ff;
+    }
+    @keyframes nightGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    /* Background video */
+    #bg-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      object-fit: cover;
+      z-index: -2;
+      filter: brightness(0.75) saturate(1.2);
+      transition: opacity 0.6s ease;
+    }
+    #bg-video.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Overlay glow for soft vibe */
+    #overlay-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: radial-gradient(circle at center, rgba(255,182,193,0.3), transparent 70%);
+      z-index: -1;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      animation: glowPulse 5s ease-in-out infinite alternate;
+    }
+    @keyframes glowPulse {
+      0% { opacity: 0.25; }
+      100% { opacity: 0.45; }
+    }
+
+    /* Container */
+    .container {
+      background-color: rgba(255 255 255 / 0.92);
+      padding: 30px 25px;
+      border-radius: 25px;
+      box-shadow: 0 10px 24px rgba(255 182 193 / 0.4);
+      max-width: 440px;
+      margin: 60px auto 80px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      user-select: none;
+    }
+
+    h1 {
+      color: #ff6f91;
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 18px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 6px #ff9aab;
+    }
+
+    input[type="text"] {
+      padding: 12px 14px;
+      width: 75%;
+      border-radius: 14px;
+      border: 2px solid #f7b7c3;
+      font-size: 1.1rem;
+      transition: border-color 0.3s ease;
+      outline: none;
+      box-shadow: inset 0 0 6px #ffb6c1;
+      color: #622459;
+      font-weight: 600;
+    }
+    input[type="text"]:focus {
+      border-color: #ff8eb7;
+      box-shadow: 0 0 10px #ff9aac;
+    }
+    
+
+    button#get-weather-btn {
+      margin-top: 14px;
+      padding: 12px 28px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      background: linear-gradient(45deg, #ff8eb7, #ff5c8d);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 5px 12px #ff8eb7aa;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    button#get-weather-btn:hover {
+      background: linear-gradient(45deg, #ff5c8d, #ff2d61);
+      box-shadow: 0 8px 20px #ff5c8dcc;
+    }
+
+    /* Weather result */
+    #weatherResult {
+      margin-top: 25px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #662466;
+      user-select: text;
+    }
+
+    #weatherResult img {
+      margin-top: 10px;
+      width: 72px;
+      height: 72px;
+      filter: drop-shadow(0 0 4px #ff9aac);
+      transition: transform 0.4s ease;
+    }
+    #weatherResult img:hover {
+      transform: scale(1.1);
+    }
+
+    #temp {
+      font-size: 1.8rem;
+      margin-top: 10px;
+      color: #aa4f7d;
+      letter-spacing: 0.04em;
+    }
+
+    /* Toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ffc0cbaa;
+      border-radius: 34px;
+      transition: 0.4s;
+      box-shadow: 0 0 8px #ff8eb7aa;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #fff0f5;
+      border-radius: 50%;
+      transition: 0.4s;
+      box-shadow: 0 2px 6px #ff9aacbb;
+    }
+    input:checked + .slider {
+      background-color: #ff5c8dcc;
+      box-shadow: 0 0 10px #ff2d61cc;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+      background-color: #ffe0e6;
+    }
+
+    /* Forecast container */
+    .forecast {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .forecast-day {
+      background: linear-gradient(145deg, #ffdae3, #ffd1dd);
+      width: 84px;
+      border-radius: 16px;
+      padding: 14px 10px;
+      box-shadow: 0 4px 12px #ffa6b9aa;
+      text-align: center;
+      font-weight: 600;
+      color: #993b62;
+      user-select: none;
+      cursor: default;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .forecast-day:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 22px #ff85a4cc;
+    }
+
+    .forecast-day p {
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+    }
+
+    .forecast-day img {
+      width: 44px;
+      height: 44px;
+      filter: drop-shadow(0 0 5px #ff8eb7aa);
+      margin-bottom: 6px;
+    }
+
+    /* Weather tip box */
+    #weatherTip {
+      margin-top: 24px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      font-style: italic;
+      color: #aa5274;
+      background: #ffe5f0cc;
+      border-radius: 18px;
+      padding: 12px 20px;
+      box-shadow: 0 0 10px #ff8eb7cc;
+      user-select: none;
+      animation: tipFadeIn 1.2s ease forwards;
+      opacity: 0;
+    }
+    @keyframes tipFadeIn {
+      to { opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .container {
+        max-width: 95vw;
+        padding: 20px;
+      }
+      input[type="text"] {
+        width: 100%;
+      }
+      .forecast-day {
+        width: 70px;
+        padding: 10px 6px;
+      }
+      #weatherResult img {
+        width: 56px;
+        height: 56px;
+      }
+    }
+  </style>
+</head>
+<body class="sunny">
+ <img src="your-background.jpg" id="bg-image" alt="Background" />
+  <video autoplay muted loop id="bg-video">
+    <source src="cherry.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div id="overlay-glow"></div>
+
+  <div class="container">
+    <h1>Weather Forecast 🌸</h1>
+    <input type="text" id="locationInput" placeholder="Enter city name..." autocomplete="off"/>
+    <button id="get-weather-btn">Get Weather</button>
+
+    <div id="weatherResult"></div>
+    <label style="display:inline-flex; align-items:center; margin-top: 12px;">
+      <span style="font-weight:600; font-size:1.1rem; color:#aa5274;">°C / °F</span>
+      <label class="switch">
+        <input type="checkbox" id="tempToggle" />
+        <span class="slider"></span>
+      </label>
+    </label>
+
+    <div class="forecast" id="forecastResult"></div>
+    <div id="weatherTip"></div>
+  </div>
+
+<script>
+  const apiKey = '548840724e08435797151246252205';
+  let isCelsius = true;
+
+  const weatherTips = {
+    "Sunny": "It's bright and beautiful! Sunglasses recommended 😎",
+    "Clear": "Clear skies ahead! Perfect day for a walk 🌷",
+    "Partly cloudy": "A mix of sun and clouds. Dress comfortably!",
+    "Cloudy": "Clouds gathering. Might feel a bit gloomy ☁️",
+    "Overcast": "Gray skies, but cozy vibes indoors ☕️",
+    "Mist": "Drive carefully, misty conditions ahead 🌫️",
+    "Patchy rain possible": "Keep an umbrella handy just in case ☔️",
+    "Patchy snow possible": "Cold and snowy! Wear warm clothes ❄️",
+    "Light rain": "Light rain outside, stay dry! 🌧️",
+    "Moderate rain": "Moderate rain, umbrella required! ☔️",
+    "Heavy rain": "Heavy rain alert! Stay safe inside 🌧️",
+    "Thunderstorm": "Thunderstorms incoming! Stay safe and indoors ⚡️",
+    "Snow": "Snowy wonderland! Time for hot cocoa ☕️❄️",
+    "Fog": "Low visibility due to fog, be cautious 🌫️",
+    "Drizzle": "Light drizzle outside, take care 🌦️",
+    "Freezing fog": "Freezing fog alert! Stay warm ❄️",
+    "Haze": "Hazy weather, maybe wear a mask 😷",
+    "Partly sunny": "Partly sunny skies, enjoy the day ☀️",
+  };
+
+  function updateBackground(conditionText) {
+    const body = document.body;
+    body.className = '';
+
+    if (/sunny|clear/i.test(conditionText)) {
+      body.classList.add('sunny');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-12/small_watermarked/191208_03_Forest_Sakura_4k_001_preview.webm');
+    } else if (/rain|drizzle|shower/i.test(conditionText)) {
+      body.classList.add('rainy');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2021-02/small_watermarked/210201_04_Rainy_Scene_01_preview.webm');
+    } else if (/cloud|overcast|mist|fog|haze/i.test(conditionText)) {
+      body.classList.add('cloudy');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2018-04/small_watermarked/180310_07_Cloudy_Sky_03_preview.webm');
+    } else if (/snow|freezing/i.test(conditionText)) {
+      body.classList.add('snow');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-01/small_watermarked/190124_02_Snowy_Winter_01_preview.webm');
+    } else if (/night|clear sky/i.test(conditionText) && new Date().getHours() >= 18) {
+      body.classList.add('night');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2018-06/small_watermarked/180607_06_Night_Clouds_4k_001_preview.webm');
+    } else {
+      // Default fallback
+      body.classList.add('sunny');
+      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-12/small_watermarked/191208_03_Forest_Sakura_4k_001_preview.webm');
+    }
+  }
+
+  function setVideoSrc(url) {
+    const video = document.getElementById('bg-video');
+    if (video.src !== url) {
+      video.src = url;
+      video.classList.remove('hidden');
+      video.load();
+      video.play();
+    }
+  }
+
+  function displayWeatherTips(conditionText) {
+    let tip = "Enjoy your day! 🌸";
+    for (const key in weatherTips) {
+      if (conditionText.toLowerCase().includes(key.toLowerCase())) {
+        tip = weatherTips[key];
+        break;
+      }
+    }
+    const tipBox = document.getElementById('weatherTip');
+    tipBox.textContent = tip;
+    tipBox.style.opacity = '0';
+    setTimeout(() => {
+      tipBox.style.opacity = '1';
+    }, 50);
+  }
+
+  async function getWeather() {
+    const location = document.getElementById('locationInput').value.trim();
+    if (!location) {
+      alert('Please enter a city name.');
+      return;
+    }
+
+    try {
+      const currentUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(location)}&aqi=no`;
+      const forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(location)}&days=5`;
+
+      const [currentRes, forecastRes] = await Promise.all([
+        fetch(currentUrl),
+        fetch(forecastUrl)
+      ]);
+
+      if (!currentRes.ok || !forecastRes.ok) throw new Error('Location not found');
+
+      const currentData = await currentRes.json();
+      const forecastData = await forecastRes.json();
+
+      const tempC = currentData.current.temp_c;
+      const tempF = currentData.current.temp_f;
+      const condition = currentData.current.condition.text;
+      const iconUrl = `https:${currentData.current.condition.icon}`;
+      const cityName = currentData.location.name;
+
+      updateBackground(condition);
+      displayWeatherTips(condition);
+
+      // Show current weather
+      document.getElementById('weatherResult').innerHTML = `
+        <p><strong>${cityName}</strong></p>
+        <img src="${iconUrl}" alt="${condition}" title="${condition}"/>
+        <p>${condition}</p>
+        <p id="temp">${isCelsius ? tempC + ' °C' : tempF + ' °F'}</p>
+      `;
+
+      // Forecast cards
+      const forecastHTML = forecastData.forecast.forecastday.map(day => {
+        const date = new Date(day.date);
+        const dayName = date.toLocaleDateString(undefined, { weekday: 'short' });
+        const avgTempC = day.day.avgtemp_c.toFixed(1);
+        const avgTempF = day.day.avgtemp_f.toFixed(1);
+        const icon = `https:${day.day.condition.icon}`;
+        return `
+          <div class="forecast-day" title="${day.day.condition.text}">
+            <p>${dayName}</p>
+            <img src="${icon}" alt="${day.day.condition.text}" />
+            <p class="forecast-temp" data-c="${avgTempC}" data-f="${avgTempF}">${isCelsius ? avgTempC + ' °C' : avgTempF + ' °F'}</p>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('forecastResult').innerHTML = forecastHTML;
+
+    } catch (error) {
+      alert('Sorry, we could not find that location. Please try again.');
+      console.error(error);
+    }
+  }
+
+  // Toggle temperature units
+  document.getElementById('tempToggle').addEventListener('change', function() {
+    isCelsius = !this.checked;
+
+    // Update main temp
+    const tempEl = document.getElementById('temp');
+    if (tempEl) {
+      let tempVal = parseFloat(tempEl.textContent);
+      let newTemp;
+      if (isCelsius) {
+        // Convert F to C if needed
+        // But better to just refetch? We'll just toggle display using stored data here for simplicity
+        newTemp = tempEl.textContent.includes('°F') ? ((tempVal - 32) * 5 / 9).toFixed(1) + ' °C' : tempEl.textContent;
+      } else {
+        newTemp = tempEl.textContent.includes('°C') ? (tempVal * 9 / 5 + 32).toFixed(1) + ' °F' : tempEl.textContent;
+      }
+      tempEl.textContent = newTemp;
+    }
+
+    // Update forecast temps
+    document.querySelectorAll('.forecast-temp').forEach(el => {
+      const c = el.getAttribute('data-c');
+      const f = el.getAttribute('data-f');
+      el.textContent = isCelsius ? `${c} °C` : `${f} °F`;
+    });
+  });
+
+  document.getElementById('get-weather-btn').addEventListener('click', getWeather);
+
+  // Bonus: Enter key triggers weather fetch
+  document.getElementById('locationInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      getWeather();
+    }
+  });
+</script>
+</body>
+</html>
