@@ -471,33 +471,32 @@
       console.error(error);
     }
   }
+// Toggle temperature units
+document.getElementById('unit-toggle-btn').addEventListener('click', () => {
+  isCelsius = !isCelsius;
 
-  // Toggle temperature units
-  document.getElementById('tempToggle').addEventListener('change', function() {
-    isCelsius = !this.checked;
+  const tempEl = document.getElementById('temperature');
+  if (tempEl) {
+    const tempText = tempEl.textContent;
+    const tempVal = parseFloat(tempText);
 
-    // Update main temp
-    const tempEl = document.getElementById('temp');
-    if (tempEl) {
-      let tempVal = parseFloat(tempEl.textContent);
-      let newTemp;
-      if (isCelsius) {
-        // Convert F to C if needed
-        // But better to just refetch? We'll just toggle display using stored data here for simplicity
-        newTemp = tempEl.textContent.includes('°F') ? ((tempVal - 32) * 5 / 9).toFixed(1) + ' °C' : tempEl.textContent;
-      } else {
-        newTemp = tempEl.textContent.includes('°C') ? (tempVal * 9 / 5 + 32).toFixed(1) + ' °F' : tempEl.textContent;
-      }
-      tempEl.textContent = newTemp;
+    let newTemp;
+    if (isCelsius) {
+      newTemp = tempText.includes('°F') ? ((tempVal - 32) * 5 / 9).toFixed(1) + ' °C' : tempText;
+    } else {
+      newTemp = tempText.includes('°C') ? (tempVal * 9 / 5 + 32).toFixed(1) + ' °F' : tempText;
     }
+    tempEl.textContent = newTemp;
+  }
 
-    // Update forecast temps
-    document.querySelectorAll('.forecast-temp').forEach(el => {
-      const c = el.getAttribute('data-c');
-      const f = el.getAttribute('data-f');
-      el.textContent = isCelsius ? `${c} °C` : `${f} °F`;
-    });
+  // Update forecast temps
+  document.querySelectorAll('.forecast-temp').forEach(el => {
+    const c = el.getAttribute('data-c');
+    const f = el.getAttribute('data-f');
+    el.textContent = isCelsius ? `${c} °C` : `${f} °F`;
   });
+});
+
 
   document.getElementById('get-weather-btn').addEventListener('click', getWeather);
 
