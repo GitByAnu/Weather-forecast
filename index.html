@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Weather Forecast 🌸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weather Forecast App</title>
   <style>
-    /* Reset and base */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,499 +13,597 @@
 
     html, body {
       height: 100%;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: linear-gradient(135deg, #ffdde1, #eea2a2);
       overflow-x: hidden;
-      color: #4b2350;
-      user-select: none;
     }
 
-    /* Background animations by weather */
-    body.sunny {
-      background: linear-gradient(135deg, #ffd6d6, #ffe4ec);
-      animation: sunnyGlow 8s ease-in-out infinite alternate;
-    }
-    @keyframes sunnyGlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    body.rainy {
-      background: linear-gradient(135deg, #a4c6f8, #c1d7ff);
-      animation: rainyGlow 5s ease-in-out infinite alternate;
-    }
-    @keyframes rainyGlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    body.cloudy {
-      background: linear-gradient(135deg, #d8d8d8, #f0f0f0);
-      animation: cloudyGlow 7s ease-in-out infinite alternate;
-    }
-    @keyframes cloudyGlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    body.snow {
-      background: linear-gradient(135deg, #e0f7ff, #ffffff);
-      animation: snowGlow 6s ease-in-out infinite alternate;
-    }
-    @keyframes snowGlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    body.night {
-      background: linear-gradient(135deg, #2a1a40, #6b4f7d);
-      animation: nightGlow 8s ease-in-out infinite alternate;
-      color: #f6e5ff;
-    }
-    @keyframes nightGlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    /* Background video */
-    #bg-video {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      object-fit: cover;
-      z-index: -2;
-      filter: brightness(0.75) saturate(1.2);
-      transition: opacity 0.6s ease;
-    }
-    #bg-video.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* Overlay glow for soft vibe */
-    #overlay-glow {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: radial-gradient(circle at center, rgba(255,182,193,0.3), transparent 70%);
-      z-index: -1;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      animation: glowPulse 5s ease-in-out infinite alternate;
-    }
-    @keyframes glowPulse {
-      0% { opacity: 0.25; }
-      100% { opacity: 0.45; }
-    }
-
-    /* Container */
-    .container {
-      background-color: rgba(255 255 255 / 0.92);
-      padding: 30px 25px;
-      border-radius: 25px;
-      box-shadow: 0 10px 24px rgba(255 182 193 / 0.4);
-      max-width: 440px;
-      margin: 60px auto 80px;
+    body {
+      font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif;
+      background: linear-gradient(to bottom right, #ffd6e0, #fff1f9);
+      color: #4a2c2a;
       text-align: center;
+      padding: 20px;
+      transition: background-color 0.4s, color 0.4s;
       position: relative;
-      z-index: 10;
-      user-select: none;
+      z-index: 1;
     }
 
-    h1 {
-      color: #ff6f91;
-      font-weight: 700;
-      font-size: 2.5rem;
-      margin-bottom: 18px;
-      letter-spacing: 2px;
-      text-shadow: 0 0 6px #ff9aab;
+    body.dark {
+      background: linear-gradient(to bottom right, #2c2c34, #1a1a22);
+      color: #e6d0d8;
     }
 
-    input[type="text"] {
-      padding: 12px 14px;
-      width: 75%;
-      border-radius: 14px;
-      border: 2px solid #f7b7c3;
-      font-size: 1.1rem;
-      transition: border-color 0.3s ease;
-      outline: none;
-      box-shadow: inset 0 0 6px #ffb6c1;
-      color: #622459;
-      font-weight: 600;
+    /* tsParticles canvas must be behind everything */
+    #tsparticles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none; /* so clicks go through */
     }
-    input[type="text"]:focus {
-      border-color: #ff8eb7;
-      box-shadow: 0 0 10px #ff9aac;
-    }
-    
 
-    button#get-weather-btn {
-      margin-top: 14px;
-      padding: 12px 28px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: white;
-      background: linear-gradient(45deg, #ff8eb7, #ff5c8d);
+    .screen {
+      display: none;
+      position: relative;
+      z-index: 2;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 25px;
+      padding: 25px;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(255, 192, 203, 0.6);
+      transition: background-color 0.4s, box-shadow 0.4s;
+      position: relative;
+      z-index: 2;
+    }
+
+    body.dark .card {
+      background-color: rgba(44, 44, 52, 0.9);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+    }
+
+    button {
+      background-color: #ff85a2;
       border: none;
       border-radius: 20px;
+      padding: 12px 24px;
+      font-size: 18px;
+      margin-top: 20px;
       cursor: pointer;
-      box-shadow: 0 5px 12px #ff8eb7aa;
-      transition: background 0.3s ease, box-shadow 0.3s ease;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff6b8d;
+    }
+
+    input {
+      padding: 12px;
+      border-radius: 15px;
+      border: 2px solid #ffb6c1;
+      width: 80%;
+      margin: 15px 0;
+      font-size: 16px;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    }
+
+    body.dark input {
+      background-color: #3a3a46;
+      border-color: #ff8ab1;
+      color: #f0c9d8;
+    }
+
+    h1, h2 {
+      color: #d6336c;
+      transition: color 0.4s;
+    }
+
+    body.dark h1, body.dark h2 {
+      color: #ff95b6;
+    }
+
+    .details {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    .emoji {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+
+    /* Soft pink message */
+    .weather-message {
+      color: #ffb6c1; /* soft pink */
+      font-weight: 600;
+      margin: 10px 0 20px 0;
+      transition: color 0.5s;
+    }
+
+    body.dark .weather-message {
+      color: #ff9fc3; /* slightly lighter pink in dark mode */
+    }
+
+    /* 5-day forecast container */
+    .forecast-container {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      justify-content: center;
+    }
+
+    .forecast-day {
+      background-color: #ffe3eb;
+      border-radius: 20px;
+      padding: 12px 10px;
+      width: 100px;
+      box-shadow: 0 0 10px rgba(255, 128, 160, 0.4);
+      color: #9a2b4d;
+      flex-shrink: 0;
       user-select: none;
-    }
-    button#get-weather-btn:hover {
-      background: linear-gradient(45deg, #ff5c8d, #ff2d61);
-      box-shadow: 0 8px 20px #ff5c8dcc;
-    }
-
-    /* Weather result */
-    #weatherResult {
-      margin-top: 25px;
-      font-weight: 700;
-      font-size: 1.4rem;
-      color: #662466;
-      user-select: text;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: transform 0.6s ease, opacity 0.6s ease;
     }
 
-    #weatherResult img {
-      margin-top: 10px;
-      width: 72px;
-      height: 72px;
-      filter: drop-shadow(0 0 4px #ff9aac);
-      transition: transform 0.4s ease;
-    }
-    #weatherResult img:hover {
-      transform: scale(1.1);
+    body.dark .forecast-day {
+      background-color: #4b3140;
+      color: #f7b0c9;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
     }
 
-    #temp {
-      font-size: 1.8rem;
-      margin-top: 10px;
-      color: #aa4f7d;
-      letter-spacing: 0.04em;
+    .forecast-day.show {
+      opacity: 1;
+      transform: translateX(0);
     }
 
-    /* Toggle switch */
+    .forecast-day h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .forecast-day .emoji {
+      font-size: 38px;
+      margin-bottom: 6px;
+    }
+
+    .forecast-day p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    ::placeholder {
+      color: #c97390;
+    }
+
+    body.dark ::placeholder {
+      color: #f5a9c0;
+    }
+
+    /* Toggle Switch Container */
     .switch {
       position: relative;
       display: inline-block;
-      width: 60px;
-      height: 34px;
-      margin-left: 10px;
-      vertical-align: middle;
+      width: 80px;
+      height: 38px;
+      margin: 20px auto 10px auto;
     }
+
+    /* Hide default checkbox */
     .switch input {
       opacity: 0;
       width: 0;
       height: 0;
     }
+
+    /* The slider background */
     .slider {
       position: absolute;
       cursor: pointer;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ffc0cbaa;
+      background-color: #ffb6c1;
       border-radius: 34px;
       transition: 0.4s;
-      box-shadow: 0 0 8px #ff8eb7aa;
+      box-shadow: 0 0 6px #ff85a2;
+      user-select: none;
     }
+
+    /* The round circle */
     .slider:before {
       position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
+      content: "°C";
+      height: 30px;
+      width: 30px;
       left: 4px;
       bottom: 4px;
-      background-color: #fff0f5;
+      background-color: white;
       border-radius: 50%;
       transition: 0.4s;
-      box-shadow: 0 2px 6px #ff9aacbb;
-    }
-    input:checked + .slider {
-      background-color: #ff5c8dcc;
-      box-shadow: 0 0 10px #ff2d61cc;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-      background-color: #ffe0e6;
-    }
-
-    /* Forecast container */
-    .forecast {
-      margin-top: 28px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .forecast-day {
-      background: linear-gradient(145deg, #ffdae3, #ffd1dd);
-      width: 84px;
-      border-radius: 16px;
-      padding: 14px 10px;
-      box-shadow: 0 4px 12px #ffa6b9aa;
+      line-height: 30px;
       text-align: center;
-      font-weight: 600;
-      color: #993b62;
+      font-weight: bold;
+      color: #d6336c;
+      font-size: 18px;
       user-select: none;
-      cursor: default;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .forecast-day:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 22px #ff85a4cc;
     }
 
-    .forecast-day p {
-      margin-bottom: 6px;
-      font-size: 0.95rem;
-      letter-spacing: 0.05em;
+    /* When checked, move the circle right and change content */
+    input:checked + .slider:before {
+      transform: translateX(42px);
+      content: "°F";
+      color: #b22e50;
     }
 
-    .forecast-day img {
-      width: 44px;
-      height: 44px;
-      filter: drop-shadow(0 0 5px #ff8eb7aa);
-      margin-bottom: 6px;
+    /* Background color change on toggle */
+    input:checked + .slider {
+      background-color: #d6336c;
+      box-shadow: 0 0 8px #b22e50;
     }
 
-    /* Weather tip box */
-    #weatherTip {
-      margin-top: 24px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      font-style: italic;
-      color: #aa5274;
-      background: #ffe5f0cc;
-      border-radius: 18px;
-      padding: 12px 20px;
-      box-shadow: 0 0 10px #ff8eb7cc;
+    /* Dark mode toggle styling */
+    .dark-mode-switch {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 60px;
+      height: 34px;
+      z-index: 1000;
+    }
+
+    .dark-mode-switch .slider {
+      background-color: #ffb6c1;
+      box-shadow: 0 0 6px #ff85a2;
+    }
+
+    .dark-mode-switch .slider:before {
+      content: "☀️";
+      color: #d6336c;
+      font-size: 18px;
+      line-height: 30px;
+      text-align: center;
+      left: 4px;
+      bottom: 4px;
+      width: 30px;
+      height: 30px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      transition: 0.4s;
       user-select: none;
-      animation: tipFadeIn 1.2s ease forwards;
-      opacity: 0;
-    }
-    @keyframes tipFadeIn {
-      to { opacity: 1; }
     }
 
-    /* Responsive */
-    @media (max-width: 480px) {
-      .container {
-        max-width: 95vw;
-        padding: 20px;
-      }
-      input[type="text"] {
-        width: 100%;
-      }
-      .forecast-day {
-        width: 70px;
-        padding: 10px 6px;
-      }
-      #weatherResult img {
-        width: 56px;
-        height: 56px;
-      }
+    .dark-mode-switch input:checked + .slider:before {
+      transform: translateX(26px);
+      content: "🌙";
+      color: #b22e50;
+    }
+
+    .dark-mode-switch input:checked + .slider {
+      background-color: #d6336c;
+      box-shadow: 0 0 8px #b22e50;
+    }
+
+    /* Temperature text style */
+    #tempValue {
+      font-weight: 900;
+      font-size: 28px;
+      display: inline-block;
+      user-select: none;
     }
   </style>
 </head>
-<body class="sunny">
-  <video autoplay muted loop id="bg-video">
-    <source src="cherry.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <div id="overlay-glow"></div>
+<body>
 
-  <div class="container">
-    <h1>Weather Forecast 🌸</h1>
-    <input type="text" id="locationInput" placeholder="Enter city name..." autocomplete="off"/>
-    <button id="get-weather-btn">Get Weather</button>
+  <!-- Particle background container -->
+  <div id="tsparticles"></div>
 
-    <div id="weatherResult"></div>
-    <label style="display:inline-flex; align-items:center; margin-top: 12px;">
-      <span style="font-weight:600; font-size:1.1rem; color:#aa5274;">°C / °F</span>
-      <label class="switch">
-        <input type="checkbox" id="tempToggle" />
-        <span class="slider"></span>
-      </label>
-    </label>
+  <!-- Dark Mode Toggle (Fixed) -->
+  <label class="switch dark-mode-switch">
+    <input type="checkbox" id="darkModeToggle" />
+    <span class="slider"></span>
+  </label>
 
-    <div class="forecast" id="forecastResult"></div>
-    <div id="weatherTip"></div>
+  <!-- Welcome Screen -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="card">
+      <h1 style="font-size: 36px; color: #d6336c;">Weather Forecast 🌸</h1>
+      <button onclick="showScreen('inputScreen')">Get Started</button>
+    </div>
   </div>
 
-<script>
-  const apiKey = '548840724e08435797151246252205';
-  let isCelsius = true;
+  <!-- Input Screen -->
+  <div class="screen" id="inputScreen">
+    <div class="card">
+      <h2>Enter Your City</h2>
+      <input type="text" id="cityInput" placeholder="e.g. Tokyo, Paris, Delhi" />
+      <button onclick="getWeather()">Show Weather</button>
+    </div>
+  </div>
 
-  const weatherTips = {
-    "Sunny": "It's bright and beautiful! Sunglasses recommended 😎",
-    "Clear": "Clear skies ahead! Perfect day for a walk 🌷",
-    "Partly cloudy": "A mix of sun and clouds. Dress comfortably!",
-    "Cloudy": "Clouds gathering. Might feel a bit gloomy ☁️",
-    "Overcast": "Gray skies, but cozy vibes indoors ☕️",
-    "Mist": "Drive carefully, misty conditions ahead 🌫️",
-    "Patchy rain possible": "Keep an umbrella handy just in case ☔️",
-    "Patchy snow possible": "Cold and snowy! Wear warm clothes ❄️",
-    "Light rain": "Light rain outside, stay dry! 🌧️",
-    "Moderate rain": "Moderate rain, umbrella required! ☔️",
-    "Heavy rain": "Heavy rain alert! Stay safe inside 🌧️",
-    "Thunderstorm": "Thunderstorms incoming! Stay safe and indoors ⚡️",
-    "Snow": "Snowy wonderland! Time for hot cocoa ☕️❄️",
-    "Fog": "Low visibility due to fog, be cautious 🌫️",
-    "Drizzle": "Light drizzle outside, take care 🌦️",
-    "Freezing fog": "Freezing fog alert! Stay warm ❄️",
-    "Haze": "Hazy weather, maybe wear a mask 😷",
-    "Partly sunny": "Partly sunny skies, enjoy the day ☀️",
-  };
+  <!-- Weather Result Screen -->
+  <div class="screen" id="resultScreen">
+    <div class="card" id="weatherCard">
+      <!-- Weather data will appear here -->
+    </div>
+  </div>
 
-  function updateBackground(conditionText) {
-    const body = document.body;
-    body.className = '';
+  <!-- tsParticles CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
 
-    if (/sunny|clear/i.test(conditionText)) {
-      body.classList.add('sunny');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-12/small_watermarked/191208_03_Forest_Sakura_4k_001_preview.webm');
-    } else if (/rain|drizzle|shower/i.test(conditionText)) {
-      body.classList.add('rainy');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2021-02/small_watermarked/210201_04_Rainy_Scene_01_preview.webm');
-    } else if (/cloud|overcast|mist|fog|haze/i.test(conditionText)) {
-      body.classList.add('cloudy');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2018-04/small_watermarked/180310_07_Cloudy_Sky_03_preview.webm');
-    } else if (/snow|freezing/i.test(conditionText)) {
-      body.classList.add('snow');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-01/small_watermarked/190124_02_Snowy_Winter_01_preview.webm');
-    } else if (/night|clear sky/i.test(conditionText) && new Date().getHours() >= 18) {
-      body.classList.add('night');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2018-06/small_watermarked/180607_06_Night_Clouds_4k_001_preview.webm');
-    } else {
-      // Default fallback
-      body.classList.add('sunny');
-      setVideoSrc('https://cdn.videvo.net/videvo_files/video/free/2019-12/small_watermarked/191208_03_Forest_Sakura_4k_001_preview.webm');
+  <script>
+    const apiKey = '548840724e08435797151246252205';
+    const forecastApiUrl = 'http://api.weatherapi.com/v1/forecast.json';
+
+    let currentData = null;
+    let isCelsius = true;
+
+    // Show screen by id
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
     }
-  }
 
-  function setVideoSrc(url) {
-    const video = document.getElementById('bg-video');
-    if (video.src !== url) {
-      video.src = url;
-      video.classList.remove('hidden');
-      video.load();
-      video.play();
+    // Dark mode toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('change', () => {
+      document.body.classList.toggle('dark', darkModeToggle.checked);
+    });
+
+    // Initialize tsParticles with default stars config
+    async function initParticles(type = 'stars') {
+      let options = {};
+
+      if(type === 'snow') {
+        options = {
+          particles: {
+            number: { value: 80 },
+            color: { value: "#fff" },
+            shape: {
+              type: "image",
+              image: {
+                src: "https://cdn-icons-png.flaticon.com/512/642/642104.png", // small snowflake icon
+                width: 32,
+                height: 32
+              }
+            },
+            opacity: { value: 0.8 },
+            size: { value: 12, random: true },
+            move: { enable: true, speed: 2, direction: "bottom", outMode: "out" },
+            rotate: { value: 45, direction: "random", animation: { enable: true, speed: 10 } },
+            twinkle: { particles: { enable: true, frequency: 0.1, opacity: 1 } }
+          },
+          detectRetina: true,
+          background: {
+            color: "transparent"
+          }
+        };
+      } else if(type === 'rain') {
+        options = {
+          particles: {
+            number: { value: 100 },
+            color: { value: "#9ec9ff" },
+            shape: {
+              type: "image",
+              image: {
+                src: "https://cdn-icons-png.flaticon.com/512/414/414974.png", // raindrop icon
+                width: 24,
+                height: 24
+              }
+            },
+            opacity: { value: 0.5 },
+            size: { value: 14, random: true },
+            move: { enable: true, speed: 7, direction: "bottom", outMode: "out" },
+            rotate: { value: 15, direction: "random", animation: { enable: true, speed: 20 } }
+          },
+          detectRetina: true,
+          background: {
+            color: "transparent"
+          }
+        };
+      } else { // default stars / bokeh circles
+        options = {
+          particles: {
+            number: { value: 70, density: { enable: true, area: 800 } },
+            color: { value: "#ffffff" },
+            shape: {
+              type: "circle",
+            },
+            opacity: {
+              value: 0.3,
+              random: true,
+              anim: {
+                enable: true,
+                speed: 1,
+                opacity_min: 0.1,
+                sync: false
+              }
+            },
+            size: {
+              value: 4,
+              random: true,
+              anim: {
+                enable: true,
+                speed: 3,
+                size_min: 1,
+                sync: false
+              }
+            },
+            move: {
+              enable: true,
+              speed: 0.6,
+              direction: "none",
+              random: true,
+              straight: false,
+              outMode: "out",
+              bounce: false
+            }
+          },
+          detectRetina: true,
+          background: {
+            color: "transparent"
+          }
+        };
+      }
+
+      // If tsParticles already loaded, destroy previous instance
+      if(window.particles) {
+        await window.particles.destroy();
+      }
+      window.particles = await tsParticles.load("tsparticles", options);
     }
-  }
 
-  function displayWeatherTips(conditionText) {
-    let tip = "Enjoy your day! 🌸";
-    for (const key in weatherTips) {
-      if (conditionText.toLowerCase().includes(key.toLowerCase())) {
-        tip = weatherTips[key];
-        break;
+    // Show weather emoji based on condition text
+    function getWeatherEmoji(condition) {
+      condition = condition.toLowerCase();
+      if(condition.includes('sunny') || condition.includes('clear')) return '☀️';
+      if(condition.includes('cloud')) return '☁️';
+      if(condition.includes('rain') || condition.includes('drizzle')) return '🌧️';
+      if(condition.includes('snow') || condition.includes('blizzard')) return '❄️';
+      if(condition.includes('thunder')) return '⛈️';
+      if(condition.includes('fog') || condition.includes('mist') || condition.includes('haze')) return '🌫️';
+      if(condition.includes('wind')) return '💨';
+      return '🌈';
+    }
+
+    // Show weather message based on condition
+    function getWeatherMessage(condition) {
+      condition = condition.toLowerCase();
+      if(condition.includes('sunny') || condition.includes('clear')) return 'Bright and beautiful day ahead!';
+      if(condition.includes('cloud')) return 'A bit cloudy, but still nice.';
+      if(condition.includes('rain') || condition.includes('drizzle')) return 'Don\'t forget your umbrella!';
+      if(condition.includes('snow') || condition.includes('blizzard')) return 'Cozy up, it\'s snowing!';
+      if(condition.includes('thunder')) return 'Stay safe, thunderstorm is here.';
+      if(condition.includes('fog') || condition.includes('mist') || condition.includes('haze')) return 'Drive carefully in the fog.';
+      if(condition.includes('wind')) return 'Hold onto your hats, windy day!';
+      return 'Have a great day!';
+    }
+
+    // Format date string for 5-day forecast display
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+
+    // Get and display weather data
+    async function getWeather() {
+      const city = document.getElementById('cityInput').value.trim();
+      if(!city) {
+        alert("Please enter a city name.");
+        return;
+      }
+      try {
+        const response = await fetch(`${forecastApiUrl}?key=${apiKey}&q=${encodeURIComponent(city)}&days=5`);
+        if(!response.ok) throw new Error("City not found");
+        const data = await response.json();
+        currentData = data;
+        displayWeather(data);
+        showScreen('resultScreen');
+      } catch (error) {
+        alert("Error fetching weather data. Please check the city name and try again.");
       }
     }
-    const tipBox = document.getElementById('weatherTip');
-    tipBox.textContent = tip;
-    tipBox.style.opacity = '0';
-    setTimeout(() => {
-      tipBox.style.opacity = '1';
-    }, 50);
-  }
 
-  async function getWeather() {
-    const location = document.getElementById('locationInput').value.trim();
-    if (!location) {
-      alert('Please enter a city name.');
-      return;
-    }
+    // Display weather info on result screen
+    function displayWeather(data) {
+      const card = document.getElementById('weatherCard');
+      const location = data.location.name + ", " + data.location.country;
+      const current = data.current;
+      const forecastDays = data.forecast.forecastday;
 
-    try {
-      const currentUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(location)}&aqi=no`;
-      const forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(location)}&days=5`;
+      // Determine emoji and message
+      const emoji = getWeatherEmoji(current.condition.text);
+      const message = getWeatherMessage(current.condition.text);
 
-      const [currentRes, forecastRes] = await Promise.all([
-        fetch(currentUrl),
-        fetch(forecastUrl)
-      ]);
+      // Temperature display with toggle
+      let tempC = current.temp_c;
+      let tempF = current.temp_f;
 
-      if (!currentRes.ok || !forecastRes.ok) throw new Error('Location not found');
+      // Update temperature text
+      function updateTempText() {
+        const tempValElem = document.getElementById('tempValue');
+        tempValElem.textContent = isCelsius ? `${tempC.toFixed(1)} °C` : `${tempF.toFixed(1)} °F`;
+      }
 
-      const currentData = await currentRes.json();
-      const forecastData = await forecastRes.json();
-
-      const tempC = currentData.current.temp_c;
-      const tempF = currentData.current.temp_f;
-      const condition = currentData.current.condition.text;
-      const iconUrl = `https:${currentData.current.condition.icon}`;
-      const cityName = currentData.location.name;
-
-      updateBackground(condition);
-      displayWeatherTips(condition);
-
-      // Show current weather
-      document.getElementById('weatherResult').innerHTML = `
-        <p><strong>${cityName}</strong></p>
-        <img src="${iconUrl}" alt="${condition}" title="${condition}"/>
-        <p>${condition}</p>
-        <p id="temp">${isCelsius ? tempC + ' °C' : tempF + ' °F'}</p>
-      `;
-
-      // Forecast cards
-      const forecastHTML = forecastData.forecast.forecastday.map(day => {
-        const date = new Date(day.date);
-        const dayName = date.toLocaleDateString(undefined, { weekday: 'short' });
-        const avgTempC = day.day.avgtemp_c.toFixed(1);
-        const avgTempF = day.day.avgtemp_f.toFixed(1);
-        const icon = `https:${day.day.condition.icon}`;
-        return `
-          <div class="forecast-day" title="${day.day.condition.text}">
-            <p>${dayName}</p>
-            <img src="${icon}" alt="${day.day.condition.text}" />
-            <p class="forecast-temp" data-c="${avgTempC}" data-f="${avgTempF}">${isCelsius ? avgTempC + ' °C' : avgTempF + ' °F'}</p>
+      // Build forecast HTML
+      let forecastHTML = '';
+      forecastDays.forEach((day, i) => {
+        forecastHTML += `
+          <div class="forecast-day" style="transition-delay: ${i * 0.15}s;">
+            <h3>${formatDate(day.date)}</h3>
+            <div class="emoji">${getWeatherEmoji(day.day.condition.text)}</div>
+            <p>Max: ${day.day.maxtemp_c.toFixed(1)} °C</p>
+            <p>Min: ${day.day.mintemp_c.toFixed(1)} °C</p>
           </div>
         `;
-      }).join('');
-      document.getElementById('forecastResult').innerHTML = forecastHTML;
+      });
 
-    } catch (error) {
-      alert('Sorry, we could not find that location. Please try again.');
-      console.error(error);
-    }
-  }
+      card.innerHTML = `
+        <h2>${location}</h2>
+        <div class="emoji" aria-label="weather icon">${emoji}</div>
+        <div class="weather-message">${message}</div>
+        <div>
+          <span id="tempValue">${tempC.toFixed(1)} °C</span>
+          <label class="switch" style="vertical-align: middle; margin-left: 10px;">
+            <input type="checkbox" id="tempToggle" ${isCelsius ? '' : 'checked'} />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="details">
+          <p>Condition: ${current.condition.text}</p>
+          <p>Humidity: ${current.humidity}%</p>
+          <p>Wind: ${current.wind_kph} kph</p>
+        </div>
+        <h3>5-Day Forecast</h3>
+        <div class="forecast-container">
+          ${forecastHTML}
+        </div>
+        <button onclick="showScreen('inputScreen')">Check Another City</button>
+      `;
 
-  // Toggle temperature units
-  document.getElementById('tempToggle').addEventListener('change', function() {
-    isCelsius = !this.checked;
+      // Animate forecast days in
+      setTimeout(() => {
+        const forecastElems = card.querySelectorAll('.forecast-day');
+        forecastElems.forEach(el => el.classList.add('show'));
+      }, 100);
 
-    // Update main temp
-    const tempEl = document.getElementById('temp');
-    if (tempEl) {
-      let tempVal = parseFloat(tempEl.textContent);
-      let newTemp;
-      if (isCelsius) {
-        // Convert F to C if needed
-        // But better to just refetch? We'll just toggle display using stored data here for simplicity
-        newTemp = tempEl.textContent.includes('°F') ? ((tempVal - 32) * 5 / 9).toFixed(1) + ' °C' : tempEl.textContent;
+      // Add temperature toggle event
+      const tempToggle = document.getElementById('tempToggle');
+      tempToggle.addEventListener('change', () => {
+        isCelsius = !tempToggle.checked;
+        updateTempText();
+      });
+
+      // Initialize temperature text correct
+      updateTempText();
+
+      // Update particle background based on weather
+      if (current.condition.text.toLowerCase().includes('snow')) {
+        initParticles('snow');
+      } else if (current.condition.text.toLowerCase().includes('rain') || current.condition.text.toLowerCase().includes('drizzle')) {
+        initParticles('rain');
       } else {
-        newTemp = tempEl.textContent.includes('°C') ? (tempVal * 9 / 5 + 32).toFixed(1) + ' °F' : tempEl.textContent;
+        initParticles('stars');
       }
-      tempEl.textContent = newTemp;
     }
 
-    // Update forecast temps
-    document.querySelectorAll('.forecast-temp').forEach(el => {
-      const c = el.getAttribute('data-c');
-      const f = el.getAttribute('data-f');
-      el.textContent = isCelsius ? `${c} °C` : `${f} °F`;
+    // Initialize default particles on page load
+    window.addEventListener('load', () => {
+      initParticles('stars');
     });
-  });
-
-  document.getElementById('get-weather-btn').addEventListener('click', getWeather);
-
-  // Bonus: Enter key triggers weather fetch
-  document.getElementById('locationInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      getWeather();
-    }
-  });
-</script>
+  </script>
 </body>
 </html>
